@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Play.Catalog.Service.Entities;
-using Play.Catalog.Service.Repositories;
-using Play.Catalog.Service.Settings;
 using Play.Catalog.Service.Utilities;
+using Play.Common.MongoDB;
+using Play.Common.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
