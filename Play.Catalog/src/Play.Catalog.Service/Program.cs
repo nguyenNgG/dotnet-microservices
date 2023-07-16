@@ -1,8 +1,4 @@
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Driver;
 using Play.Catalog.Service.Entities;
 using Play.Catalog.Service.Repositories;
 using Play.Catalog.Service.Settings;
@@ -16,26 +12,8 @@ var serviceSettings = builder.Configuration
     .GetSection(nameof(ServiceSettings))
     .Get<ServiceSettings>();
 
-//// Configure MongoDB serialization
-BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
-BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
-
-//// Configure dependency injection
-builder.Services.AddSingleton(serviceProvider =>
-{
-    var mongoDbSettings = builder.Configuration
-        .GetSection(nameof(MongoDbSettings))
-        .Get<MongoDbSettings>();
-    var mongoClient = new MongoClient(mongoDbSettings?.ConnectionString);
-    return mongoClient.GetDatabase(serviceSettings?.ServiceName);
-});
-
-builder.Services.AddSingleton<IRepository<Item>>(serviceProvider =>
-{
-    // get the registered MongoDB service
-    var database = serviceProvider.GetService<IMongoDatabase>();
-    return new MongoRepository<Item>(database!, "items");
-});
+//// Add MongoDB services & do dependency injection
+builder.Services.AddMongo().AddMongoRepository<Item>("items");
 
 builder.Services.AddControllers(options =>
 {
