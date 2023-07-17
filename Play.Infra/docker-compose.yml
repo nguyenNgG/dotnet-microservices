@@ -1,4 +1,3 @@
-# docker run -d --rm --name mongo -p 27017:27017 -v mongodbdata:/data/db mongo
 
 version: "3.8"
 
@@ -11,5 +10,19 @@ services:
     volumes:
       - mongodbdata:/data/db
 
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      # for services to communicate with RabbitMQ
+      - 5672:5672
+      # for us to navigate the RabbitMQ portal
+      - 15672:15672
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    # specify a place name for RabbitMQ to store data at
+    hostname: rabbitmq
+
 volumes:
   mongodbdata:
+  rabbitmqdata:
