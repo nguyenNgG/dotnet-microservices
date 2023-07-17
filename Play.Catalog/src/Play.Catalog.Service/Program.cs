@@ -1,8 +1,7 @@
-using MassTransit;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Play.Catalog.Service.Entities;
-using Play.Catalog.Service.Settings;
 using Play.Catalog.Service.Utilities;
+using Play.Common.MassTransit;
 using Play.Common.MongoDB;
 using Play.Common.Settings;
 
@@ -15,26 +14,7 @@ var serviceSettings = builder.Configuration
     .Get<ServiceSettings>();
 
 //// Add MongoDB services & do dependency injection
-builder.Services.AddMongo().AddMongoRepository<Item>("items");
-
-//// Add MassTransit RabbitMQ
-builder.Services.AddMassTransit(
-    x =>
-        x.UsingRabbitMq(
-            (context, configurator) =>
-            {
-                var rabbitMQSettings = builder.Configuration
-                    .GetSection(nameof(RabbitMQSettings))
-                    .Get<RabbitMQSettings>();
-                configurator.Host(rabbitMQSettings?.Host);
-                // Define the prefix for the queue
-                configurator.ConfigureEndpoints(
-                    context,
-                    new KebabCaseEndpointNameFormatter(serviceSettings?.ServiceName, false)
-                );
-            }
-        )
-);
+builder.Services.AddMongo().AddMongoRepository<Item>("items").AddMassTransitWithRabbitMq();
 
 builder.Services.AddControllers(options =>
 {
