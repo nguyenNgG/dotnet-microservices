@@ -29,18 +29,45 @@ builder.Services
                     retryAttempt =>
                         TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
                         + TimeSpan.FromMilliseconds(jitterer.Next(0, 1000))
-                //     ,
-                // onRetry: (outcome, timespan, retryAttempt) =>
-                // {
-                //     var serviceProvider = builder.Services.BuildServiceProvider();
-                //     serviceProvider
-                //         .GetService<ILogger<CatalogClient>>()
-                //         ?.LogWarning(
-                //             $"Delaying for {timespan.TotalSeconds} seconds, then making retry {retryAttempt}"
-                //         );
-                // }
+                        // ,
+                    // onRetry: (outcome, timespan, retryAttempt) =>
+                    // {
+                    //     var serviceProvider = builder.Services.BuildServiceProvider();
+                    //     serviceProvider
+                    //         .GetService<ILogger<CatalogClient>>()
+                    //         ?.LogWarning(
+                    //             $"Delaying for {timespan.TotalSeconds} seconds, then making retry {retryAttempt}"
+                    //         );
+                    // }
                 )
     )
+    .AddTransientHttpErrorPolicy(
+        policyBuilder =>
+            policyBuilder
+                .Or<TimeoutRejectedException>()
+                .CircuitBreakerAsync(
+                    3,
+                    TimeSpan.FromSeconds(15)
+                    // ,
+                    // onBreak: (outcome, timespan) =>
+                    // {
+                    //     var serviceProvider = builder.Services.BuildServiceProvider();
+                    //     serviceProvider
+                    //         .GetService<ILogger<CatalogClient>>()
+                    //         ?.LogWarning(
+                    //             $"Opening the circuit for {timespan.TotalSeconds} seconds..."
+                    //         );
+                    // },
+                    // onReset: () =>
+                    // {
+                    //     var serviceProvider = builder.Services.BuildServiceProvider();
+                    //     serviceProvider
+                    //         .GetService<ILogger<CatalogClient>>()
+                    //         ?.LogWarning($"Closing the circuit...");
+                    // }
+                )
+    )
+    // Must be placed below other policies
     // Wait at most 1 second before timeout
     .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(1));
 
