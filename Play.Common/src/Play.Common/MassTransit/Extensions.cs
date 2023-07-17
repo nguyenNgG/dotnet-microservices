@@ -34,6 +34,11 @@ namespace Play.Common.MassTransit
                             context,
                             new KebabCaseEndpointNameFormatter(serviceSettings?.ServiceName, false)
                         );
+                        // Configure retries if message is not able to be consumed by the consumer
+                        configurator.UseMessageRetry(retryConfigurator =>
+                        {
+                            retryConfigurator.Interval(3, TimeSpan.FromSeconds(5));
+                        });
                     }
                 );
             });
